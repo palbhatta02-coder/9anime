@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simple Calculator</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: #f0f2f5;
+    }
+
+    .calculator {
+      background: #ffffff;
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+      width: 320px;
+    }
+
+    .display {
+      width: 100%;
+      height: 64px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 2rem;
+      text-align: right;
+      padding: 0 16px;
+      margin-bottom: 20px;
+      outline: none;
+      color: #1e293b;
+    }
+
+    .buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+
+    button {
+      height: 54px;
+      font-size: 1.25rem;
+      font-weight: 500;
+      border: none;
+      border-radius: 8px;
+      background: #f1f5f9;
+      color: #334155;
+      cursor: pointer;
+      transition: background 0.15s ease, transform 0.05s ease;
+    }
+
+    button:hover {
+      background: #e2e8f0;
+    }
+
+    button:active {
+      transform: scale(0.96);
+    }
+
+    button.operator {
+      background: #e0f2fe;
+      color: #0284c7;
+    }
+
+    button.operator:hover {
+      background: #bae6fd;
+    }
+
+    button.action {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+
+    button.action:hover {
+      background: #fecaca;
+    }
+
+    button.equals {
+      background: #2563eb;
+      color: #ffffff;
+      grid-column: span 2;
+    }
+
+    button.equals:hover {
+      background: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="calculator">
+    <input type="text" id="display" class="display" value="0" readonly />
+    <div class="buttons">
+      <!-- Row 1 -->
+      <button class="action" onclick="clearDisplay()">C</button>
+      <button class="action" onclick="deleteLast()">DEL</button>
+      <button class="operator" onclick="appendOperator('/')">&divide;</button>
+      <button class="operator" onclick="appendOperator('*')">&times;</button>
+
+      <!-- Row 2 -->
+      <button onclick="appendNumber('7')">7</button>
+      <button onclick="appendNumber('8')">8</button>
+      <button onclick="appendNumber('9')">9</button>
+      <button class="operator" onclick="appendOperator('-')">&minus;</button>
+
+      <!-- Row 3 -->
+      <button onclick="appendNumber('4')">4</button>
+      <button onclick="appendNumber('5')">5</button>
+      <button onclick="appendNumber('6')">6</button>
+      <button class="operator" onclick="appendOperator('+')">+</button>
+
+      <!-- Row 4 -->
+      <button onclick="appendNumber('1')">1</button>
+      <button onclick="appendNumber('2')">2</button>
+      <button onclick="appendNumber('3')">3</button>
+      <button onclick="appendNumber('.')">.</button>
+
+      <!-- Row 5 -->
+      <button onclick="appendNumber('0')">0</button>
+      <button class="equals" onclick="calculate()">=</button>
+    </div>
+  </div>
+
+  <script>
+    const display = document.getElementById('display');
+    let shouldResetDisplay = false;
+
+    function appendNumber(num) {
+      if (display.value === '0' || display.value === 'Error' || shouldResetDisplay) {
+        display.value = num === '.' ? '0.' : num;
+        shouldResetDisplay = false;
+      } else {
+        if (num === '.' && display.value.slice(-1) === '.') return;
+        display.value += num;
+      }
+    }
+
+    function appendOperator(op) {
+      if (display.value === 'Error') return;
+      shouldResetDisplay = false;
+      const lastChar = display.value.slice(-1);
+
+      if (['+', '-', '*', '/'].includes(lastChar)) {
+        display.value = display.value.slice(0, -1) + op;
+      } else {
+        display.value += op;
+      }
+    }
+
+    function clearDisplay() {
+      display.value = '0';
+      shouldResetDisplay = false;
+    }
+
+    function deleteLast() {
+      if (display.value === 'Error' || display.value.length === 1) {
+        display.value = '0';
+      } else {
+        display.value = display.value.slice(0, -1);
+      }
+    }
+
+    function calculate() {
+      try {
+        // Safe evaluation for basic mathematical expressions
+        const sanitized = display.value.replace(/[^0-9+\-*/.]/g, '');
+        if (!sanitized) return;
+
+        const result = Function(`'use strict'; return (${sanitized})`)();
+        display.value = Number.isFinite(result) ? result : 'Error';
+        shouldResetDisplay = true;
+      } catch {
+        display.value = 'Error';
+        shouldResetDisplay = true;
+      }
+    }
+  </script>
+</body>
+</html>
